@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.6.0
 #=============================================================================
-FROM amd64/ros:humble-ros-core-jammy AS kachaka-api-base-amd64
+FROM amd64/ros:jazzy-ros-core-noble AS kachaka-api-base-amd64
 #-----------------------------------------------------------------------------
-FROM arm64v8/ros:humble-ros-core-jammy AS kachaka-api-base-arm64
+FROM arm64v8/ros:jazzy-ros-core-noble AS kachaka-api-base-arm64
 
 #=============================================================================
 FROM kachaka-api-base-${TARGETARCH} AS kachaka-api-base
@@ -44,7 +44,7 @@ COPY ros2/demos/kachaka_speak/package.xml /ws/src/kachaka_speak/package.xml
 COPY ros2/demos/kachaka_vision/package.xml /ws/src/kachaka_vision/package.xml
 
 RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro humble --os=ubuntu:jammy \
+    | xargs rosdep resolve --rosdistro jazzy --os=ubuntu:noble \
     | grep -v '^#' \
     | sed 's/ \+/\n/g'\
     | sort \
@@ -107,6 +107,11 @@ RUN apt-get update && \
         libgrpc++-dev \
         nlohmann-json3-dev \
         ros-dev-tools \
+        libopencv-dev \
+        ros-jazzy-tf2-geometry-msgs \
+        ros-jazzy-cv-bridge \
+        ros-jazzy-xacro \
+        ros-jazzy-launch-ros \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -117,7 +122,7 @@ COPY ros2/kachaka_description /ws/src/kachaka_description
 COPY ros2/kachaka_grpc_ros2_bridge /ws/src/kachaka_grpc_ros2_bridge
 COPY ros2/kachaka_interfaces /ws/src/kachaka_interfaces
 COPY --from=kachaka-api-protogen /ws/gen-src/cpp /ws/src/kachaka_grpc_ros2_bridge/gen-src
-RUN . /opt/ros/humble/setup.sh && \
+RUN . /opt/ros/jazzy/setup.sh && \
     colcon build --install-base ${PREFIX} --merge-install --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release
 
 #=============================================================================
@@ -170,8 +175,8 @@ FROM ubuntu:22.04 AS kachaka-playground-base-amd64
 
 #-----------------------------------------------------------------------------
 # This image was created by executing the following command within https://github.com/multiarch/ubuntu-core
-# sudo ./update.sh -a arm64 -v jammy -q aarch64 -u v6.1.0-5 -d docker.io/multiarch/ubuntu-core -t arm64
-FROM asia-northeast1-docker.pkg.dev/pfr-flexci/tmp/multiarch/ubuntu-core:KEEP-arm64-jammy AS kachaka-playground-base-arm64
+# sudo ./update.sh -a arm64 -v noble -q aarch64 -u v6.1.0-5 -d docker.io/multiarch/ubuntu-core -t arm64
+FROM asia-northeast1-docker.pkg.dev/pfr-flexci/tmp/multiarch/ubuntu-core:KEEP-arm64-noble AS kachaka-playground-base-arm64
 
 #-----------------------------------------------------------------------------
 FROM kachaka-playground-base-${TARGETARCH} AS kachaka-playground
